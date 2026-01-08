@@ -1,0 +1,65 @@
+body {
+    margin:0;
+    font-family: Arial;
+    background:#f0f2f5;
+}
+
+#login {
+    height:100vh;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+}
+
+#app {
+    display:flex;
+    height:100vh;
+}
+
+#users {
+    width:250px;
+    background:#fff;
+    border-right:1px solid #ccc;
+    padding:10px;
+}
+
+#users li {
+    cursor:pointer;
+    padding:6px;
+}
+
+#users li:hover {
+    background:#eee;
+}
+
+#chat {
+    flex:1;
+    padding:10px;
+    display:flex;
+    flex-direction:column;
+}
+
+#msgs {
+    flex:1;
+    overflow-y:auto;
+    list-style:none;
+    padding:0;
+}
+
+#msgs li {
+    margin:5px 0;
+    background:#fff;
+    padding:8px;
+    border-radius:5px;
+}
+
+input {
+    padding:10px;
+    margin-top:5px;
+}
+
+button {
+    margin-top:5px;
+    padding:8px;
+}
