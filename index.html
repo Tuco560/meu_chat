@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<title>Chat</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="login">
+    <input id="nome" placeholder="Seu nome">
+    <button onclick="login()">Entrar</button>
+</div>
+
+<div id="app" style="display:none;">
+    <div id="users">
+        <h3>Usuários</h3>
+        <ul id="lista"></ul>
+        <button onclick="abrirGrupo()">Grupo</button>
+    </div>
+
+    <div id="chat">
+        <h3 id="titulo">Grupo</h3>
+        <ul id="msgs"></ul>
+        <div id="digitando"></div>
+        <input id="texto" placeholder="Mensagem">
+        <button onclick="enviar()">Enviar</button>
+    </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const socket = io();
+
+let chat = 'grupo';
+let privadoId = null;
+
+function login(){
+    const nome = document.getElementById('nome').value;
+    if(!nome) return;
+    socket.emit('login', nome);
+    document.getElementById('login').style.display='none';
+    document.getElementById('app').style.display='flex';
+}
+
+function abrirGrupo(){
+    chat = 'grupo';
+    privadoId = null;
+    document.getElementById('titulo').innerText = 'Grupo';
+    document.getElementById('msgs').innerHTML = '';
+}
+
+function enviar(){
+    const texto = document.getElementById('texto').value;
+    if(!texto) return;
+    document.getElementById('texto').value='';
+
+    if(chat === 'grupo'){
+        socket.emit('mensagem-grupo', texto);
+    } else {
+        socket.emit('mensagem-privada', {
+            paraId: privadoId,
+            texto
+        });
+    }
+}
+
+socket.on('usuarios', (usuarios)=>{
+    const ul = document.getElementById('lista');
+    ul.innerHTML='';
+    Object.entries(usuarios).forEach(([id,nome])=>{
+        const li = document.createElement('li');
+        li.innerText = nome;
+        li.onclick=()=>{
+            chat='privado';
+            privadoId=id;
+            document.getElementById('titulo').innerText = nome;
+            document.getElementById('msgs').innerHTML='';
+        };
+        ul.appendChild(li);
+    });
+});
+
+socket.on('mensagem-grupo', msg=>{
+    if(chat!=='grupo') return;
+    add(msg.nome, msg.texto);
+});
+
+socket.on('mensagem-privada', msg=>{
+    if(chat!=='privado') return;
+    add(msg.nome, msg.texto);
+});
+
+function add(nome,texto){
+    const li = document.createElement('li');
+    li.innerHTML = `<b>${nome}:</b> ${texto}`;
+    document.getElementById('msgs').appendChild(li);
+}
+
+document.getElementById('texto').addEventListener('input', ()=>{
+    socket.emit('digitando',{ paraId: chat==='grupo'?null:privadoId });
+});
+
+socket.on('digitando', nome=>{
+    document.getElementById('digitando').innerText =
+        nome + ' está digitando...';
+    setTimeout(()=>{
+        document.getElementById('digitando').innerText='';
+    },1000);
+});
+</script>
+</body>
+</html>
